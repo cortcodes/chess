@@ -128,34 +128,6 @@ def snap_to_grid(pos):
     new_y = center_y - half_grid_size
     return new_x, new_y
 
-def get_valid_pawn_moves(piece, current_pos):
-    valid_moves = []
-    direction = -1 if piece["color"] == "white" else 1  # White pawns move up (-1), black pawns move down (+1)
-    start_row = 6 if piece["color"] == "white" else 1  # Starting row for white is 6, for black is 1
-
-    # Move forward one square
-    forward_pos = (current_pos[0], current_pos[1] + direction)
-    if is_square_empty(forward_pos):
-        valid_moves.append(forward_pos)
-
-    # Move forward two squares if on start row
-    if current_pos[1] == start_row:
-        double_forward_pos = (current_pos[0], current_pos[1] + 2 * direction)
-        if is_square_empty(double_forward_pos):
-            valid_moves.append(double_forward_pos)
-
-    return valid_moves
-
-def is_square_empty(pos):
-    # Implement logic to check if the given position is empty
-    # You'll need a way to keep track of the board state for this
-    return True  # Placeholder
-
-def get_piece_type(piece):
-    # Implement logic to determine the type of the piece (pawn, rook, etc.)
-    # This could be based on the image, the key in the pieces dictionary, etc.
-    return "pawn"  # Placeholder
-
 selected_piece = None
 
 while running:
@@ -183,23 +155,12 @@ while running:
                 if found_piece:
                     break
         elif event.type == pygame.MOUSEBUTTONUP and selected_piece:
-            mouse_pos = (event.pos[0] // 100, event.pos[1] // 100)
-            piece_type = get_piece_type(selected_piece)
-
-            if piece_type == "pawn":
-                current_pos = (selected_piece["rect"].x // 100, selected_piece["rect"].y // 100)
-                valid_moves = get_valid_pawn_moves(selected_piece, current_pos)
-
-                if mouse_pos in valid_moves:
-                    new_pos = snap_to_grid((mouse_pos[0] * 100, mouse_pos[1] * 100))
-                    selected_piece["rect"].topleft = new_pos
-                else:
-                    # Snap back to original position or handle invalid move
-                    pass
-            else:
-                # Handle other pieces
-                selected_piece = None
-
+            # Snap the piece's position to the nearest grid center
+            new_pos = snap_to_grid((selected_piece["rect"].x + offset_x, selected_piece["rect"].y + offset_y))
+    
+            # Update the piece's rectangle position
+            selected_piece["rect"].topleft = new_pos
+            selected_piece = None  # Deselect the piece
         elif event.type == pygame.MOUSEMOTION and selected_piece:
             if "rect" in selected_piece:
                 mouse_x, mouse_y = event.pos
