@@ -16,21 +16,42 @@ x_coords = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 
 # ChessPiece class
 class ChessPiece:
-    def __init__(self, image_path, position, color):
+    def __init__(self, image_path, position, color, piece_type):
         self.image = pygame.transform.scale(pygame.image.load(image_path), (100, 100))
         self.position = position
         self.color = color
         self.rect = self.image.get_rect(topleft=self.position)
+        self.piece_type = piece_type
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
+
+    # be able to access the board state
+
+class Pawn(ChessPiece):
+    pass
+
+class Rook(ChessPiece):
+    pass
+
+class Knight(ChessPiece):
+    pass
+
+class Bishop(ChessPiece):
+    pass
+
+class Queen(ChessPiece):
+    pass
+
+class King(ChessPiece):
+    pass
+
 
 # ChessBoard class
 class ChessBoard:
     def __init__(self):
         self.pieces = []
         self.load_pieces()
-
 
     def load_pieces(self):
         black_pieces = [
@@ -58,16 +79,16 @@ class ChessBoard:
         ]
 
         for img, pos, color in black_pieces[:8]:
-            piece = ChessPiece(f'pieces/{img}', pos, color)
+            piece = ChessPiece(f'pieces/{img}', pos, color, '')
             self.pieces.append(piece)
         
         for img, pos, color in white_pieces[:8]:
-            piece = ChessPiece(f'pieces/{img}', pos, color)
+            piece = ChessPiece(f'pieces/{img}', pos, color, '')
             self.pieces.append(piece)
 
         for i in range(8):
-            black_pawn = ChessPiece(f'pieces/black-pawn.png', (0 + (100 * i), 100), 'black')
-            white_pawn = ChessPiece(f'pieces/white-pawn.png', (0 + (100 * i), 600), 'white')
+            black_pawn = ChessPiece(f'pieces/black-pawn.png', (0 + (100 * i), 100), 'black', '')
+            white_pawn = ChessPiece(f'pieces/white-pawn.png', (0 + (100 * i), 600), 'white', '')
             self.pieces.append(black_pawn)
             self.pieces.append(white_pawn)
 
@@ -106,9 +127,22 @@ class ChessBoard:
             piece.draw(screen)
 
 
+class RunGame:
+    def __init__(self):
+        pass
+        
+    def mbd(self):
+        for piece in chessboard.pieces:
+            if piece.rect.collidepoint(event.pos):
+                selected_piece = piece
+                offset_x = piece.rect.x - event.pos[0]
+                offset_y = piece.rect.y - event.pos[1]
+                break
+
 
 # Create a ChessBoard instance
 chessboard = ChessBoard()
+run_game = RunGame()
 
 running = True
 selected_piece = None
@@ -119,12 +153,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            for piece in chessboard.pieces:
-                if piece.rect.collidepoint(event.pos):
-                    selected_piece = piece
-                    offset_x = piece.rect.x - event.pos[0]
-                    offset_y = piece.rect.y - event.pos[1]
-                    break
+            run_game.mbd()
         elif event.type == pygame.MOUSEBUTTONUP:
             if selected_piece:
                 # Snap piece position to grid
