@@ -16,6 +16,10 @@ x_coords = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 
 # ChessPiece class
 class ChessPiece:
+
+    BORDER_WIDTH = 2
+    BORDER_COLOR = (255, 255, 0)
+
     def __init__(self, image_path, position, color, piece_type):
         self.image = pygame.transform.scale(pygame.image.load(image_path), (100, 100))
         self.position = position
@@ -25,6 +29,8 @@ class ChessPiece:
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
+
+        pygame.draw.rect(screen, self.BORDER_COLOR, self.rect, self.BORDER_WIDTH)
 
     # be able to access the board state
 
@@ -129,15 +135,32 @@ class ChessBoard:
 
 class RunGame:
     def __init__(self):
-        pass
+        self.selected_piece = None
+        self.offset_x = 0
+        self.offset_y = 0
         
-    def mbd(self):
+    def mbd(self, event, chessboard):
         for piece in chessboard.pieces:
             if piece.rect.collidepoint(event.pos):
-                selected_piece = piece
-                offset_x = piece.rect.x - event.pos[0]
-                offset_y = piece.rect.y - event.pos[1]
+                self.selected_piece = piece
+
+                # Calculate offsets to center the piece on the mouse cursor
+                self.offset_x = piece.rect.width // 2
+                self.offset_y = piece.rect.height // 2
                 break
+
+    def mbu(self):
+        if self.selected_piece:
+                # Snap piece position to grid
+                self.selected_piece.rect.x = (self.selected_piece.rect.x // 100) * 100
+                self.selected_piece.rect.y = (self.selected_piece.rect.y // 100) * 100
+                self.selected_piece = None
+
+    def mm(self, event):
+        if self.selected_piece:
+            # Update piece position to keep cursor at its center
+            self.selected_piece.rect.x = event.pos[0] - self.offset_x
+            self.selected_piece.rect.y = event.pos[1] - self.offset_y
 
 
 # Create a ChessBoard instance
@@ -153,18 +176,11 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            run_game.mbd()
+            run_game.mbd(event, chessboard)
         elif event.type == pygame.MOUSEBUTTONUP:
-            if selected_piece:
-                # Snap piece position to grid
-                selected_piece.rect.x = (selected_piece.rect.x // 100) * 100
-                selected_piece.rect.y = (selected_piece.rect.y // 100) * 100
-                selected_piece = None
+            run_game.mbu()
         elif event.type == pygame.MOUSEMOTION:
-            if selected_piece:
-                mouse_x, mouse_y = event.pos
-                selected_piece.rect.x = mouse_x + offset_x
-                selected_piece.rect.y = mouse_y + offset_y
+            run_game.mm(event)
 
     # Render the game
     screen.fill('white')
